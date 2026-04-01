@@ -179,6 +179,11 @@ make dev-setup  # install editable package + dev tools
 make lint       # ruff check . (auto-installs dev tools if missing)
 make format     # black . (auto-installs dev tools if missing)
 make test       # pytest -q (auto-installs dev tools if missing)
+## Development commands
+```bash
+make lint     # ruff check .
+make format   # black .
+make test     # pytest -q
 ```
 
 ## Tray behavior notes
