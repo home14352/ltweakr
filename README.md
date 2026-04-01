@@ -1,85 +1,153 @@
 # NeonCtl
 
-NeonCtl is a production-oriented Linux desktop system management application with a cyberpunk interface built with **Python 3.12 + PySide6**.
+NeonCtl is a cyberpunk-themed Linux desktop system management application built with **Python 3.12 + PySide6**.
 
-## Highlights
+## Features (v1)
 - Cross-distro detection and capability matrix
-- Package abstraction (native + Flatpak + Snap + AppImage scanning)
-- Installed package inventory with export
-- Diagnostics, services, logs, network, disks, and process views
-- Privilege strategy abstraction (`pkexec`/`sudo`/`doas`)
-- XDG autostart support and desktop integration helpers
-- Tray support with live CPU/RAM/disk/uptime monitoring
-- Worker abstraction to keep UI responsive
-- Themeable QSS skins (5 included)
+- Native package manager abstraction (best-effort)
+- Installed package inventory browser with CSV export
+- Updates, diagnostics, privilege strategy checks
+- Tray integration with live CPU/RAM/disk/uptime tooltip
+- XDG autostart helpers and desktop integration helpers
+- Theme support with 5 bundled QSS themes
 
-## Screenshots
-- Dashboard: system summary cards + capability badges
-- Packages: installed inventory table and available search mode
-- Settings: theme + tray + autostart controls
-- Diagnostics: health checks and export action
+## Supported Linux families (detection)
+- Fedora/RHEL family
+- Debian/Ubuntu family
+- Arch family
+- openSUSE family
+- Alpine, Void, Gentoo, NixOS, Solus
+- Unknown fallback via `/etc/os-release`
 
-## Supported distributions (detection)
-Fedora/RHEL family, Debian/Ubuntu family, Arch family, openSUSE, Alpine, Void, Gentoo, NixOS, Solus, and unknown fallback via `/etc/os-release`.
+## Supported package manager backends (best effort)
+`apt`, `dnf`, `pacman`, `zypper`, `apk`, `xbps` (+ architecture to extend more managers).
 
-## Supported package managers (best effort)
-`dnf`, `yum`, `microdnf`, `apt`, `nala`, `pacman`, `yay`, `paru`, `zypper`, `apk`, `xbps-*`, `emerge`, `eopkg`, `nix profile`/`nix-env`, `flatpak`, `snap`.
+---
 
-## Install
-### Virtual environment
+## Installation
+
+### 1) Prerequisites
+On your Linux system, ensure these are available:
+- Python **3.12+**
+- `pip`
+- `venv` module
+- Qt runtime libraries required by PySide6 (installed automatically in most distributions through wheel dependencies)
+
+### 2) Clone
+```bash
+git clone <your-repo-url> neonctl
+cd neonctl
+```
+
+### 3) Recommended: Virtual environment install
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
+pip install --upgrade pip
 pip install -e .[dev]
 ```
 
-### User-local install
-```bash
-pip install --user .
-```
-
-### Run
+Run:
 ```bash
 neonctl
+# or
+python -m neonctl.main
 # or
 make run
 ```
 
-## Desktop launcher integration
-Use NeonCtl Settings or backend helper to install:
-- `~/.local/share/applications/neonctl.desktop`
-- `~/.local/share/icons/hicolor/256x256/apps/neonctl.png`
-
-## Autostart behavior
-NeonCtl uses XDG autostart at `~/.config/autostart/neonctl.desktop`.
-
-## Tray notes
-Some Wayland shells restrict legacy tray behavior. NeonCtl degrades gracefully: if tray is unavailable, close exits normally.
-
-## Installed vs Available packages
-- **Installed Packages**: full local package inventory from the active native backend.
-- **Available Search**: repository search for installable packages.
-
-## Performance notes
-Large installed package lists are loaded in a worker thread and incrementally added to the table.
-
-## Privilege model
-NeonCtl uses targeted elevation only for privileged actions through a centralized privilege strategy. No global root app launch required.
-
-## Safety philosophy
-- No `shell=True`
-- Validate user input
-- Confirm destructive operations
-- Clear unsupported-feature messaging
-
-## Known limitations
-- Repo pin/hold semantics differ heavily by distro and are exposed conditionally.
-- Snap and Flatpak actions require those tools to be installed.
-- Some advanced distro-specific workflows remain informational in v1.
-
-## Development
+### 4) User-local install (without virtualenv)
 ```bash
-make lint
-make test
-make format
+pip install --user .
 ```
+
+If your user-local bin directory is not on PATH, add one of:
+- `~/.local/bin` (most distros)
+- `~/Library/Python/...` (not Linux; listed for completeness)
+
+Then run:
+```bash
+neonctl
+```
+
+### 5) System-wide install (administrator-managed)
+> Use this only when you intentionally want a machine-wide install.
+
+```bash
+sudo pip install .
+```
+
+Safer alternative for distro-managed environments:
+- Build and package NeonCtl for your distribution (recommended for production deployment).
+
+---
+
+## Desktop launcher integration
+NeonCtl includes desktop entry templates:
+- `neonctl/assets/desktop/neonctl.desktop`
+- `neonctl/assets/autostart/neonctl.desktop`
+
+Manual user-level installation:
+```bash
+mkdir -p ~/.local/share/applications
+cp neonctl/assets/desktop/neonctl.desktop ~/.local/share/applications/neonctl.desktop
+
+mkdir -p ~/.local/share/icons/hicolor/256x256/apps
+cp neonctl/assets/icons/neonctl.png ~/.local/share/icons/hicolor/256x256/apps/neonctl.png
+
+update-desktop-database ~/.local/share/applications || true
+gtk-update-icon-cache ~/.local/share/icons/hicolor || true
+```
+
+After this, NeonCtl should appear in your desktop launcher menu.
+
+---
+
+## Autostart (XDG)
+NeonCtl uses:
+- `~/.config/autostart/neonctl.desktop`
+
+You can enable/disable autostart from Settings in-app, or manually:
+```bash
+mkdir -p ~/.config/autostart
+cp neonctl/assets/autostart/neonctl.desktop ~/.config/autostart/neonctl.desktop
+```
+
+Disable:
+```bash
+rm -f ~/.config/autostart/neonctl.desktop
+```
+
+---
+
+## Development commands
+```bash
+make lint     # ruff check .
+make format   # black .
+make test     # pytest -q
+```
+
+## Tray behavior notes
+- Some Wayland desktop shells limit legacy system tray behavior.
+- If tray is unavailable, NeonCtl falls back to normal window behavior (close exits app).
+
+## Installed vs Available package modes
+- **Installed Packages**: local package inventory on current machine.
+- **Available Search**: repository query mode (backend-dependent).
+
+## Safety model
+- No `shell=True` command execution
+- Centralized privilege strategy (`pkexec` / `sudo` / `doas`)
+- Confirmation-first for destructive operations
+- Graceful unsupported-feature messaging
+
+## Known limitations (v1)
+- Many distro-specific advanced operations are represented as safe limited support.
+- Package hold/pin semantics are intentionally conservative and backend-specific.
+- Snap/Flatpak functionality depends on those tools being installed.
+
+## Screenshots
+- Dashboard (system summary)
+- Package inventory (installed list + filter + export)
+- Settings (theme/tray/autostart)
+- Diagnostics summary page
