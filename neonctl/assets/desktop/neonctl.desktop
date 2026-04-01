@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=NeonCtl
+GenericName=System Control Center
+Comment=Cyberpunk Linux desktop system management center
+Exec=neonctl
+Icon=neonctl
+Categories=System;Utility;Settings;
+Terminal=false
+StartupNotify=true
