@@ -120,59 +120,6 @@ rm -f ~/.config/autostart/neonctl.desktop
 
 ---
 
-
-## Removal / Uninstall
-
-### If installed in a virtual environment
-From the project directory:
-```bash
-deactivate  # if currently active
-rm -rf .venv
-```
-
-### If installed with `pip install --user .`
-```bash
-python3 -m pip uninstall neonctl
-rm -f ~/.local/share/applications/neonctl.desktop
-rm -f ~/.local/share/icons/hicolor/256x256/apps/neonctl.png
-rm -f ~/.config/autostart/neonctl.desktop
-```
-
-### If installed system-wide with `sudo pip install .`
-```bash
-sudo python3 -m pip uninstall neonctl
-sudo rm -f /usr/share/applications/neonctl.desktop
-sudo rm -f /usr/share/icons/hicolor/256x256/apps/neonctl.png
-```
-
-### Optional: remove user configuration and logs
-```bash
-rm -rf ~/.config/neonctl
-rm -rf ~/.local/state/neonctl
-```
-
----
-
-## Portable use (no install)
-
-You can run NeonCtl in a portable, project-local mode without any system-wide install:
-
-```bash
-git clone <your-repo-url> neonctl
-cd neonctl
-python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-python -m neonctl.main
-```
-
-Notes:
-- Portable mode keeps dependencies inside `.venv` in the project folder.
-- To stop using portable mode, deactivate the venv and remove the checkout directory.
-- Do not copy virtualenvs between different Linux distributions or Python minor versions.
-
----
-
 ## Development commands
 ```bash
 make lint     # ruff check .
