@@ -115,3 +115,16 @@ QMenu {
 QMenu::item:selected {
     background-color: #4d260a;
 }
+
+
+QLabel { color: #ffd089; }
+QLabel[role="title"], QLabel[class="title"] { color: #ffffff; }
+QTreeWidget {
+    alternate-background-color: #1a0c03;
+    background-color: #100802;
+    border: 1px solid #8a4b00;
+}
+QTreeWidget::item:selected {
+    background-color: #ff9e1b;
+    color: #120802;
+}

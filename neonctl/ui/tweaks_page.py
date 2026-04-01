@@ -53,6 +53,7 @@ class TweaksPage(QWidget):
             for t in self.tweaks
             if q in str(t["title"]).lower()
             or q in str(t["id"]).lower()
+            or q in str(t.get("category", "")).lower()
             or q in str(t["description"]).lower()
         ]
 
@@ -60,7 +61,8 @@ class TweaksPage(QWidget):
         self.current = self.filtered()
         self.listing.clear()
         for tweak in self.current:
-            self.listing.addItem(f"{tweak['title']}  ({tweak['id']})")
+            category = tweak.get("category", "General")
+            self.listing.addItem(f"[{category}] {tweak['title']}  ({tweak['id']})")
         if self.current:
             self.listing.setCurrentRow(0)
         else:
@@ -75,6 +77,7 @@ class TweaksPage(QWidget):
         self.details.setPlainText(
             f"ID: {tweak['id']}\n"
             f"Title: {tweak['title']}\n\n"
+            f"Category: {tweak.get('category', 'General')}\n\n"
             f"Description:\n{tweak['description']}\n\n"
             f"Command Preview:\n{cmd}\n"
         )

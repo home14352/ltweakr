@@ -1,10 +1,13 @@
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QHBoxLayout,
+    QListView,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
     QStackedWidget,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -35,6 +38,31 @@ from neonctl.ui.tweaks_page import TweaksPage
 from neonctl.ui.updates_page import UpdatesPage
 from neonctl.ui.users_page import UsersPage
 
+ICON_HINTS = {
+    "Dashboard": "view-dashboard",
+    "Packages": "system-software-install",
+    "Updates": "view-refresh",
+    "Repositories": "folder-remote",
+    "Flatpak": "package-x-generic",
+    "Snap": "applications-system",
+    "AppImage": "application-x-executable",
+    "Services": "preferences-system-services",
+    "Logs": "text-x-log",
+    "Processes": "utilities-system-monitor",
+    "Tweaks": "preferences-system",
+    "Network": "network-workgroup",
+    "Disks": "drive-harddisk",
+    "Users": "system-users",
+    "Security": "security-high",
+    "Cleanup": "edit-clear",
+    "Containers": "docker",
+    "Backups": "document-save",
+    "Tasks": "view-task",
+    "Diagnostics": "dialog-information",
+    "Settings": "settings-configure",
+    "About": "help-about",
+}
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -47,14 +75,32 @@ class MainWindow(QMainWindow):
 
         central = QWidget()
         self.setCentralWidget(central)
-        lay = QHBoxLayout(central)
+        lay = QVBoxLayout(central)
 
         self.nav = QListWidget()
+        self.nav.setFlow(QListView.LeftToRight)
+        self.nav.setWrapping(False)
+        self.nav.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.nav.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.nav.setMaximumHeight(78)
+        self.nav.setViewMode(QListView.IconMode)
+        self.nav.setMovement(QListView.Static)
+        self.nav.setSpacing(8)
+        self.nav.setUniformItemSizes(True)
+
         for name in PAGES:
-            QListWidgetItem(name, self.nav)
+            icon = QIcon.fromTheme(ICON_HINTS.get(name, "applications-system"))
+            item = QListWidgetItem(icon, name)
+            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.nav.addItem(item)
+
+        lay.addWidget(self.nav)
+
+        content = QWidget()
+        content_l = QHBoxLayout(content)
         self.stack = QStackedWidget()
-        lay.addWidget(self.nav, 1)
-        lay.addWidget(self.stack, 5)
+        content_l.addWidget(self.stack)
+        lay.addWidget(content)
 
         self.page_map = {
             "Dashboard": DashboardPage(),
