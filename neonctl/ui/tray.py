@@ -15,6 +15,12 @@ class NeonTray:
         title_action = QAction("NeonCtl Control Tray", parent)
         title_action.setEnabled(False)
         self.menu.addAction(title_action)
+        self.info_action = QAction("CPU: -- | RAM: -- | Disk: --", parent)
+        self.info_action.setEnabled(False)
+        self.menu.addAction(self.info_action)
+        self.graph_action = QAction("Load: [----------]", parent)
+        self.graph_action.setEnabled(False)
+        self.menu.addAction(self.graph_action)
         self.menu.addSeparator()
 
         self.menu.addAction(QAction("Show Window", parent, triggered=parent.showNormal))
@@ -47,11 +53,22 @@ class NeonTray:
 
     def refresh_tooltip(self):
         s = collect_stats()
+        cpu = float(s["cpu_percent"])
+        ram = float(s["ram_percent"])
+        disk = float(s["disk_root_percent"])
+
+        def bar(val: float, width: int = 10) -> str:
+            fill = int(round((val / 100.0) * width))
+            return "[" + ("#" * fill) + ("-" * (width - fill)) + "]"
+
+        self.info_action.setText(f"CPU: {cpu:.1f}% | RAM: {ram:.1f}% | Disk: {disk:.1f}%")
+        self.graph_action.setText(f"Load: C{bar(cpu)} R{bar(ram)} D{bar(disk)}")
+
         self.tray.setToolTip(
             "NeonCtl\n"
-            f"🧠 CPU: {s['cpu_percent']}%\n"
-            f"🧮 RAM: {s['ram_percent']}% ({s['ram_used_gb']}/{s['ram_total_gb']} GB)\n"
-            f"💽 Disk /: {s['disk_root_percent']}%\n"
+            f"🧠 CPU: {cpu:.1f}%\n"
+            f"🧮 RAM: {ram:.1f}% ({s['ram_used_gb']}/{s['ram_total_gb']} GB)\n"
+            f"💽 Disk /: {disk:.1f}%\n"
             f"⏱ Uptime: {human_duration(s['uptime_s'])}"
         )
 

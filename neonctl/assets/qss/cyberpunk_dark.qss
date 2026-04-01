@@ -60,6 +60,7 @@ QTextEdit,
 QPlainTextEdit,
 QListWidget,
 QTableWidget {
+    min-height: 30px;
     background-color: #120802;
     color: #ffb34a;
     border: 1px solid #8a4b00;
