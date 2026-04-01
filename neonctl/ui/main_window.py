@@ -1,12 +1,9 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QListView,
-    QListWidget,
-    QListWidgetItem,
     QMainWindow,
     QStackedWidget,
+    QTabBar,
     QVBoxLayout,
     QWidget,
 )
@@ -77,30 +74,22 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
         lay = QVBoxLayout(central)
 
-        self.nav = QListWidget()
-        self.nav.setFlow(QListView.LeftToRight)
-        self.nav.setWrapping(False)
-        self.nav.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.nav.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.nav.setMaximumHeight(78)
-        self.nav.setViewMode(QListView.IconMode)
-        self.nav.setMovement(QListView.Static)
-        self.nav.setSpacing(8)
-        self.nav.setUniformItemSizes(True)
+        self.nav = QTabBar()
+        self.nav.setDocumentMode(True)
+        self.nav.setMovable(False)
+        self.nav.setExpanding(False)
+        self.nav.setUsesScrollButtons(True)
+        self.nav.setElideMode(Qt.TextElideMode.ElideNone)
+        self.nav.setIconSize(QSize(18, 18))
 
         for name in PAGES:
             icon = QIcon.fromTheme(ICON_HINTS.get(name, "applications-system"))
-            item = QListWidgetItem(icon, name)
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.nav.addItem(item)
+            self.nav.addTab(icon, name)
 
         lay.addWidget(self.nav)
 
-        content = QWidget()
-        content_l = QHBoxLayout(content)
         self.stack = QStackedWidget()
-        content_l.addWidget(self.stack)
-        lay.addWidget(content)
+        lay.addWidget(self.stack)
 
         self.page_map = {
             "Dashboard": DashboardPage(),
@@ -128,8 +117,8 @@ class MainWindow(QMainWindow):
         }
         for name in PAGES:
             self.stack.addWidget(self.page_map[name])
-        self.nav.currentRowChanged.connect(self.stack.setCurrentIndex)
-        self.nav.setCurrentRow(0)
+        self.nav.currentChanged.connect(self.stack.setCurrentIndex)
+        self.nav.setCurrentIndex(0)
 
         qss_path = theme_path(self.settings.theme)
         if qss_path.exists():
@@ -154,7 +143,7 @@ class MainWindow(QMainWindow):
 
     def open_page(self, name: str):
         idx = PAGES.index(name)
-        self.nav.setCurrentRow(idx)
+        self.nav.setCurrentIndex(idx)
         self.showNormal()
         self.raise_()
         self.activateWindow()
