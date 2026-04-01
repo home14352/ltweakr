@@ -27,6 +27,9 @@ class SecurityPage(QWidget):
         self.form.addRow("AppArmor:", self.apparmor)
         self.form.addRow("Firewall:", self.firewall)
         lay.addWidget(form_w)
+        self.tips = QLabel()
+        self.tips.setWordWrap(True)
+        lay.addWidget(self.tips)
         lay.addStretch()
         self.reload()
 
@@ -35,3 +38,6 @@ class SecurityPage(QWidget):
         self.selinux.setText(str(data.get("selinux", "unknown")))
         self.apparmor.setText(str(data.get("apparmor", "unknown")))
         self.firewall.setText(str(data.get("firewall", "unknown")))
+        self.tips.setText(
+            "Tip: keep firewall enabled, apply updates regularly, and only run trusted elevation prompts."
+        )

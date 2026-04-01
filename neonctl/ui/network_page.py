@@ -35,6 +35,9 @@ class NetworkPage(QWidget):
 
         self.interfaces = QListWidget()
         lay.addWidget(self.interfaces)
+        lay.addWidget(QLabel("DNS servers"))
+        self.dns = QListWidget()
+        lay.addWidget(self.dns)
         self.reload()
 
     def reload(self):
@@ -45,3 +48,6 @@ class NetworkPage(QWidget):
             name = iface.get("name", "?")
             addrs = iface.get("addresses") or []
             self.interfaces.addItem(f"{name}: {', '.join(addrs[:3]) or 'no addresses'}")
+        self.dns.clear()
+        for dns in data.get("dns_servers", []):
+            self.dns.addItem(dns)

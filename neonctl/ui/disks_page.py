@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
@@ -15,6 +16,57 @@ from PySide6.QtWidgets import (
 )
 
 from neonctl.backend.disks import DiskService
+
+
+class InvertedTextProgressBar(QProgressBar):
+    """Progress bar with text that inverts color over the filled chunk."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._chunk_color = QColor("#00e676")
+        self._bg_color = QColor("#120700")
+        self._border_color = QColor("#a35a00")
+        self._text_on_bg = QColor("#ffe0a8")
+        self._text_on_chunk = QColor("#101010")
+
+    def set_chunk_color(self, color: str) -> None:
+        self._chunk_color = QColor(color)
+        self.update()
+
+    def paintEvent(self, event):  # noqa: N802
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
+
+        rect = self.rect().adjusted(0, 0, -1, -1)
+        radius = 3
+
+        painter.setPen(self._border_color)
+        painter.setBrush(self._bg_color)
+        painter.drawRoundedRect(rect, radius, radius)
+
+        progress = 0.0
+        if self.maximum() > self.minimum():
+            progress = (self.value() - self.minimum()) / (self.maximum() - self.minimum())
+        fill_w = max(0, int(rect.width() * progress))
+        fill_rect = rect.adjusted(1, 1, -(rect.width() - fill_w), -1)
+        if fill_rect.width() > 0:
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(self._chunk_color)
+            painter.drawRect(fill_rect)
+
+        text = self.text()
+        if not text:
+            return
+
+        painter.setPen(self._text_on_bg)
+        painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
+
+        if fill_rect.width() > 0:
+            painter.save()
+            painter.setClipRect(fill_rect)
+            painter.setPen(self._text_on_chunk)
+            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
+            painter.restore()
 
 
 class DisksPage(QWidget):
@@ -69,26 +121,16 @@ class DisksPage(QWidget):
 
             card = QGroupBox(m.get("mountpoint", "disk"))
             card_l = QVBoxLayout(card)
-            bar = QProgressBar()
+            bar = InvertedTextProgressBar()
             bar.setRange(0, 100)
             bar.setValue(int(used))
             bar.setFormat(f"{used:.1f}% used")
-            bar.setAlignment(Qt.AlignCenter)
             chunk_color = "#00e676"
             if used >= 90:
                 chunk_color = "#ff1744"
             elif used >= 75:
                 chunk_color = "#ffab00"
-            bar.setStyleSheet(
-                "QProgressBar {"
-                "border: 1px solid #a35a00;"
-                "background: #120700;"
-                "color: #ffe0a8;"
-                "}"
-                "QProgressBar::chunk {"
-                f"background-color: {chunk_color};"
-                "}"
-            )
+            bar.set_chunk_color(chunk_color)
             card_l.addWidget(QLabel(f"Device: {m.get('device', '?')}"))
             card_l.addWidget(QLabel(f"FS: {m.get('fstype', '?')}"))
             card_l.addWidget(bar)

@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QFormLayout,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QListWidget,
     QMessageBox,
     QPushButton,
@@ -42,6 +43,48 @@ class RepositoriesPage(QWidget):
         self.listing = QListWidget()
         lay.addWidget(self.listing)
 
+        edit_row = QHBoxLayout()
+        self.repo_input = QLineEdit()
+        self.repo_input.setPlaceholderText("Repo URL or repo id (manager-specific)")
+        self.add_btn = QPushButton("Add repo")
+        self.add_btn.clicked.connect(self.add_repo)
+        self.remove_btn = QPushButton("Disable/remove repo")
+        self.remove_btn.clicked.connect(self.remove_repo)
+        edit_row.addWidget(self.repo_input)
+        edit_row.addWidget(self.add_btn)
+        edit_row.addWidget(self.remove_btn)
+        lay.addLayout(edit_row)
+
+        self.reload()
+
+    def add_repo(self):
+        value = self.repo_input.text().strip()
+        if not value:
+            return
+        res = self.service.add_repo(value)
+        if res is None:
+            QMessageBox.information(self, "Repositories", "Add repo is unsupported for this manager.")
+            return
+        if res.returncode == 0:
+            QMessageBox.information(self, "Repositories", "Repository added.")
+        else:
+            QMessageBox.warning(self, "Repositories", (res.stderr or res.stdout or "Failed.").strip())
+        self.reload()
+
+    def remove_repo(self):
+        value = self.repo_input.text().strip()
+        if not value:
+            return
+        res = self.service.remove_repo(value)
+        if res is None:
+            QMessageBox.information(
+                self, "Repositories", "Disable/remove repo is unsupported for this manager."
+            )
+            return
+        if res.returncode == 0:
+            QMessageBox.information(self, "Repositories", "Repository updated.")
+        else:
+            QMessageBox.warning(self, "Repositories", (res.stderr or res.stdout or "Failed.").strip())
         self.reload()
 
     def reload(self):

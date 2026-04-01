@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QFormLayout, QHBoxLayout, QLabel, QListWidget, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QFormLayout,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from neonctl.backend.backups import BackupsService
 
@@ -14,7 +23,10 @@ class BackupsPage(QWidget):
         top.addWidget(QLabel("<h2>Backups</h2>"))
         self.refresh_btn = QPushButton("Refresh")
         self.refresh_btn.clicked.connect(self.reload)
+        self.create_btn = QPushButton("Create backup now")
+        self.create_btn.clicked.connect(self.create_backup)
         top.addWidget(self.refresh_btn)
+        top.addWidget(self.create_btn)
         top.addStretch()
         lay.addLayout(top)
 
@@ -37,3 +49,8 @@ class BackupsPage(QWidget):
         self.items.clear()
         for item in data.get("backups", []):
             self.items.addItem(item)
+
+    def create_backup(self):
+        path = self.service.create_backup()
+        QMessageBox.information(self, "Backups", f"Backup created:\n{path}")
+        self.reload()

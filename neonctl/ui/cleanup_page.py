@@ -17,8 +17,11 @@ class CleanupPage(QWidget):
         self.refresh_btn.clicked.connect(self.reload)
         self.copy_btn = QPushButton("Copy selected command")
         self.copy_btn.clicked.connect(self.copy_selected)
+        self.run_btn = QPushButton("Run selected cleanup")
+        self.run_btn.clicked.connect(self.run_selected)
         top.addWidget(self.refresh_btn)
         top.addWidget(self.copy_btn)
+        top.addWidget(self.run_btn)
         top.addStretch()
         lay.addLayout(top)
 
@@ -40,3 +43,13 @@ class CleanupPage(QWidget):
         if item is None:
             return
         QGuiApplication.clipboard().setText(item.text())
+
+    def run_selected(self):
+        item = self.listing.currentItem()
+        if item is None:
+            return
+        res = self.service.run_recommendation(item.text())
+        if res is None:
+            self.summary.setText("Nothing to run.")
+            return
+        self.summary.setText(f"Last run exit code: {res.returncode}")

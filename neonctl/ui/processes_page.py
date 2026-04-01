@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
+    QFileDialog,
     QHBoxLayout,
     QMessageBox,
     QPushButton,
@@ -27,9 +31,15 @@ class ProcessesPage(QWidget):
         self.kill_btn.clicked.connect(self.kill_selected)
         self.clean_ram_btn = QPushButton("Clean RAM (drop caches)")
         self.clean_ram_btn.clicked.connect(self.clean_ram)
+        self.live_btn = QPushButton("Start live")
+        self.live_btn.clicked.connect(self.toggle_live)
+        self.save_btn = QPushButton("Save snapshot")
+        self.save_btn.clicked.connect(self.save_snapshot)
         top.addWidget(self.refresh_btn)
         top.addWidget(self.kill_btn)
         top.addWidget(self.clean_ram_btn)
+        top.addWidget(self.live_btn)
+        top.addWidget(self.save_btn)
         top.addStretch()
         lay.addLayout(top)
 
@@ -37,6 +47,9 @@ class ProcessesPage(QWidget):
         self.table.setHorizontalHeaderLabels(["PID", "Name", "User", "CPU%", "MEM%"])
         lay.addWidget(self.table)
 
+        self.timer = QTimer(self)
+        self.timer.setInterval(2000)
+        self.timer.timeout.connect(self.reload)
         self.reload()
 
     def reload(self):
@@ -89,3 +102,22 @@ class ProcessesPage(QWidget):
             return
         ok = self.service.clean_ram()
         QMessageBox.information(self, "RAM cleaner", "Completed." if ok else "Failed.")
+
+    def toggle_live(self):
+        if self.timer.isActive():
+            self.timer.stop()
+            self.live_btn.setText("Start live")
+        else:
+            self.timer.start()
+            self.live_btn.setText("Stop live")
+
+    def save_snapshot(self):
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save process snapshot", "neonctl_processes.csv", "CSV Files (*.csv)"
+        )
+        if not path:
+            return
+        lines = ["pid,name,user,cpu,mem"]
+        for row in self.rows:
+            lines.append(",".join([row["pid"], row["name"], row["user"], row["cpu"], row["mem"]]))
+        Path(path).write_text("\n".join(lines))

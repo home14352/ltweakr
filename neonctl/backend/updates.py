@@ -32,3 +32,19 @@ class UpdateService:
         if not cmd:
             return None
         return self.runner.run(self.priv.wrap(cmd), timeout=600)
+
+    def apply_updates(self):
+        if not self.manager:
+            return None
+        cmd_map = {
+            "apt": ["apt", "upgrade", "-y"],
+            "dnf": ["dnf", "upgrade", "-y"],
+            "pacman": ["pacman", "-Syu", "--noconfirm"],
+            "zypper": ["zypper", "update", "-y"],
+            "apk": ["apk", "upgrade"],
+            "xbps": ["xbps-install", "-Syu"],
+        }
+        cmd = cmd_map.get(self.manager)
+        if not cmd:
+            return None
+        return self.runner.run(self.priv.wrap(cmd), timeout=3600)

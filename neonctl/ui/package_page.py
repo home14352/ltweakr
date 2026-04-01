@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -36,6 +38,17 @@ class PackagePage(QWidget):
             f"Active native manager: {self.service.manager_name or 'not detected'}"
         )
         lay.addWidget(self.manager_label)
+        aur_row = QHBoxLayout()
+        self.use_aur = QCheckBox("Use AUR helper (Arch)")
+        self.aur_helper = QComboBox()
+        helpers = self.service.aur_helpers()
+        self.aur_helper.addItems(helpers or ["none detected"])
+        if self.service.default_aur_helper():
+            self.aur_helper.setCurrentText(self.service.default_aur_helper())
+        aur_row.addWidget(self.use_aur)
+        aur_row.addWidget(self.aur_helper)
+        aur_row.addStretch()
+        lay.addLayout(aur_row)
 
         search_row = QHBoxLayout()
         self.search_input = QLineEdit()
@@ -83,6 +96,8 @@ class PackagePage(QWidget):
         if not query:
             return
         res = self.service.search(query)
+        if self.use_aur.isChecked() and self.aur_helper.currentText() != "none detected":
+            res = self.service.aur_search(query, self.aur_helper.currentText())
         self._append_result(f"Search '{query}'", res)
 
     def _install(self) -> None:
@@ -98,7 +113,10 @@ class PackagePage(QWidget):
             != QMessageBox.StandardButton.Yes
         ):
             return
-        res = self.service.install(name, elevated=True)
+        if self.use_aur.isChecked() and self.aur_helper.currentText() != "none detected":
+            res = self.service.aur_install(name, self.aur_helper.currentText())
+        else:
+            res = self.service.install(name, elevated=True)
         self._append_result(f"Install '{name}'", res)
 
     def _remove(self) -> None:

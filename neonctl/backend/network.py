@@ -28,4 +28,18 @@ class NetworkService:
             "supported": True,
             "interfaces": interfaces,
             "default_route": default_route,
+            "dns_servers": self._dns_servers(),
         }
+
+    def _dns_servers(self) -> list[str]:
+        path = "/etc/resolv.conf"
+        try:
+            lines = open(path, encoding="utf-8", errors="ignore").read().splitlines()
+        except OSError:
+            return []
+        out = []
+        for ln in lines:
+            s = ln.strip()
+            if s.startswith("nameserver "):
+                out.append(s.split(maxsplit=1)[1])
+        return out

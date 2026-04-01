@@ -29,6 +29,9 @@ class UsersPage(QWidget):
 
         self.groups = QListWidget()
         lay.addWidget(self.groups)
+        lay.addWidget(QLabel("Local users"))
+        self.local_users = QListWidget()
+        lay.addWidget(self.local_users)
         self.reload()
 
     def reload(self):
@@ -38,3 +41,6 @@ class UsersPage(QWidget):
         self.groups.clear()
         for group in data.get("groups", []):
             self.groups.addItem(group)
+        self.local_users.clear()
+        for user in data.get("local_users", []):
+            self.local_users.addItem(user)

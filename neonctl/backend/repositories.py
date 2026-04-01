@@ -49,3 +49,25 @@ class RepositoryService:
         if not cmd:
             return None
         return self.runner.run(self.priv.wrap(cmd), timeout=600)
+
+    def add_repo(self, repo: str):
+        mgr = detect_native_manager()
+        cmd_map = {
+            "dnf": ["dnf", "config-manager", "--add-repo", repo],
+            "zypper": ["zypper", "ar", repo],
+        }
+        cmd = cmd_map.get(mgr or "")
+        if not cmd:
+            return None
+        return self.runner.run(self.priv.wrap(cmd), timeout=600)
+
+    def remove_repo(self, repo: str):
+        mgr = detect_native_manager()
+        cmd_map = {
+            "dnf": ["dnf", "config-manager", "--set-disabled", repo],
+            "zypper": ["zypper", "rr", repo],
+        }
+        cmd = cmd_map.get(mgr or "")
+        if not cmd:
+            return None
+        return self.runner.run(self.priv.wrap(cmd), timeout=600)

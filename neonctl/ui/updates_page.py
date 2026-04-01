@@ -25,8 +25,11 @@ class UpdatesPage(QWidget):
         self.refresh_btn.clicked.connect(self.reload)
         self.refresh_index_btn = QPushButton("Sync metadata (root)")
         self.refresh_index_btn.clicked.connect(self.refresh_metadata)
+        self.apply_btn = QPushButton("Apply all updates (root)")
+        self.apply_btn.clicked.connect(self.apply_updates)
         top.addWidget(self.refresh_btn)
         top.addWidget(self.refresh_index_btn)
+        top.addWidget(self.apply_btn)
         top.addStretch()
         lay.addLayout(top)
 
@@ -36,6 +39,26 @@ class UpdatesPage(QWidget):
         self.listing = QListWidget()
         lay.addWidget(self.listing)
 
+        self.reload()
+
+    def apply_updates(self):
+        if (
+            QMessageBox.question(
+                self,
+                "Apply updates",
+                "Apply all pending updates now? This may take a while.",
+            )
+            != QMessageBox.StandardButton.Yes
+        ):
+            return
+        res = self.service.apply_updates()
+        if res is None:
+            QMessageBox.information(self, "Updates", "No supported package manager found.")
+            return
+        if res.returncode == 0:
+            QMessageBox.information(self, "Updates", "System updates completed.")
+        else:
+            QMessageBox.warning(self, "Updates", (res.stderr or res.stdout or "Update failed.").strip())
         self.reload()
 
     def reload(self):
