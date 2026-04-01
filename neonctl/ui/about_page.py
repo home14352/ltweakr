@@ -14,6 +14,8 @@ class AboutPage(QWidget):
         lay.addWidget(QLabel("<h2>About NeonCtl</h2>"))
         lay.addWidget(QLabel(f"Version: {VERSION}"))
         lay.addWidget(QLabel(f"Python: {platform.python_version()}"))
+        lay.addWidget(QLabel(f"Qt binding: PySide6"))
         lay.addWidget(QLabel(f"Distro: {d.name}"))
+        lay.addWidget(QLabel(f"Kernel: {platform.release()}"))
         lay.addWidget(QLabel("License: MIT (project scaffold)"))
         lay.addStretch()

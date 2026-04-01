@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QListWidget,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -22,7 +23,10 @@ class UpdatesPage(QWidget):
         top.addWidget(QLabel("<h2>Updates</h2>"))
         self.refresh_btn = QPushButton("Refresh updates")
         self.refresh_btn.clicked.connect(self.reload)
+        self.refresh_index_btn = QPushButton("Sync metadata (root)")
+        self.refresh_index_btn.clicked.connect(self.refresh_metadata)
         top.addWidget(self.refresh_btn)
+        top.addWidget(self.refresh_index_btn)
         top.addStretch()
         lay.addLayout(top)
 
@@ -43,3 +47,18 @@ class UpdatesPage(QWidget):
             return
         for line in updates[:500]:
             self.listing.addItem(line)
+
+    def refresh_metadata(self):
+        res = self.service.refresh_metadata()
+        if res is None:
+            QMessageBox.information(self, "Updates", "No supported package manager found.")
+            return
+        if res.returncode == 0:
+            QMessageBox.information(self, "Updates", "Metadata refreshed successfully.")
+        else:
+            QMessageBox.warning(
+                self,
+                "Updates",
+                (res.stderr or res.stdout or "Failed to refresh package metadata.").strip(),
+            )
+        self.reload()

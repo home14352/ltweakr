@@ -35,13 +35,13 @@ class ProcessesPage(QWidget):
 
         self.table = QTableWidget(0, 5)
         self.table.setHorizontalHeaderLabels(["PID", "Name", "User", "CPU%", "MEM%"])
-        self.table.setSortingEnabled(True)
         lay.addWidget(self.table)
 
         self.reload()
 
     def reload(self):
         self.rows = self.service.list_processes(limit=400)
+        self.table.setSortingEnabled(False)
         self.table.setRowCount(len(self.rows))
         for i, row in enumerate(self.rows):
             self.table.setItem(i, 0, QTableWidgetItem(row["pid"]))
@@ -49,6 +49,7 @@ class ProcessesPage(QWidget):
             self.table.setItem(i, 2, QTableWidgetItem(row["user"]))
             self.table.setItem(i, 3, QTableWidgetItem(row["cpu"]))
             self.table.setItem(i, 4, QTableWidgetItem(row["mem"]))
+        self.table.setSortingEnabled(True)
 
     def selected_pid(self) -> int | None:
         row = self.table.currentRow()

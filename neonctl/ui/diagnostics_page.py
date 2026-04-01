@@ -5,6 +5,7 @@ from pathlib import Path
 from PySide6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
+    QLabel,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
@@ -31,6 +32,9 @@ class DiagnosticsPage(QWidget):
         row.addStretch()
         lay.addLayout(row)
 
+        self.summary = QLabel()
+        lay.addWidget(self.summary)
+
         self.table = QTableWidget(0, 3)
         self.table.setHorizontalHeaderLabels(["Check", "Status", "Detail"])
         lay.addWidget(self.table)
@@ -39,6 +43,8 @@ class DiagnosticsPage(QWidget):
 
     def reload(self):
         results = run_checks()
+        ok_count = sum(1 for item in results if item.get("ok"))
+        self.summary.setText(f"Checks: <b>{ok_count}/{len(results)}</b> passed")
         self.table.setRowCount(len(results))
         for idx, item in enumerate(results):
             self.table.setItem(idx, 0, QTableWidgetItem(item.get("name", "unknown")))

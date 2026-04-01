@@ -34,6 +34,7 @@ from neonctl.ui.tray import NeonTray
 from neonctl.ui.tweaks_page import TweaksPage
 from neonctl.ui.updates_page import UpdatesPage
 from neonctl.ui.users_page import UsersPage
+from neonctl.backend.snap import SnapService
 
 ICON_HINTS = {
     "Dashboard": "view-dashboard",
@@ -82,7 +83,8 @@ class MainWindow(QMainWindow):
         self.nav.setElideMode(Qt.TextElideMode.ElideNone)
         self.nav.setIconSize(QSize(18, 18))
 
-        for name in PAGES:
+        self.page_order = self._visible_pages()
+        for name in self.page_order:
             icon = QIcon.fromTheme(ICON_HINTS.get(name, "applications-system"))
             self.nav.addTab(icon, name)
 
@@ -115,7 +117,7 @@ class MainWindow(QMainWindow):
             "Settings": SettingsPage(self._settings_saved),
             "About": AboutPage(),
         }
-        for name in PAGES:
+        for name in self.page_order:
             self.stack.addWidget(self.page_map[name])
         self.nav.currentChanged.connect(self.stack.setCurrentIndex)
         self.nav.setCurrentIndex(0)
@@ -142,11 +144,19 @@ class MainWindow(QMainWindow):
         self.settings = settings
 
     def open_page(self, name: str):
-        idx = PAGES.index(name)
+        if name not in self.page_order:
+            return
+        idx = self.page_order.index(name)
         self.nav.setCurrentIndex(idx)
         self.showNormal()
         self.raise_()
         self.activateWindow()
+
+    def _visible_pages(self) -> list[str]:
+        pages = list(PAGES)
+        if "Snap" in pages and not SnapService().status().get("supported"):
+            pages.remove("Snap")
+        return pages
 
     def closeEvent(self, event):
         if self.settings.close_to_tray and self.tray and not self._allow_quit:

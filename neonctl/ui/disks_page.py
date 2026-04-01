@@ -73,12 +73,22 @@ class DisksPage(QWidget):
             bar.setRange(0, 100)
             bar.setValue(int(used))
             bar.setFormat(f"{used:.1f}% used")
+            bar.setAlignment(Qt.AlignCenter)
+            chunk_color = "#00e676"
             if used >= 90:
-                bar.setStyleSheet("QProgressBar::chunk { background-color: #ff1744; }")
+                chunk_color = "#ff1744"
             elif used >= 75:
-                bar.setStyleSheet("QProgressBar::chunk { background-color: #ffab00; }")
-            else:
-                bar.setStyleSheet("QProgressBar::chunk { background-color: #00e676; }")
+                chunk_color = "#ffab00"
+            bar.setStyleSheet(
+                "QProgressBar {"
+                "border: 1px solid #a35a00;"
+                "background: #120700;"
+                "color: #ffe0a8;"
+                "}"
+                "QProgressBar::chunk {"
+                f"background-color: {chunk_color};"
+                "}"
+            )
             card_l.addWidget(QLabel(f"Device: {m.get('device', '?')}"))
             card_l.addWidget(QLabel(f"FS: {m.get('fstype', '?')}"))
             card_l.addWidget(bar)

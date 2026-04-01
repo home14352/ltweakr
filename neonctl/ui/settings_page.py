@@ -2,9 +2,11 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFormLayout,
+    QLabel,
     QMessageBox,
     QPushButton,
     QSpinBox,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -20,7 +22,9 @@ class SettingsPage(QWidget):
         self.on_saved = on_saved
         self.cfg = ConfigManager()
         self.settings = self.cfg.load()
-        lay = QFormLayout(self)
+        root = QVBoxLayout(self)
+        root.addWidget(QLabel("<h2>Settings</h2>"))
+        lay = QFormLayout()
 
         self.theme = QComboBox()
         self.theme.addItems(available_themes())
@@ -46,6 +50,10 @@ class SettingsPage(QWidget):
         lay.addRow("Enable tray monitoring", self.monitoring)
         lay.addRow("Monitoring interval (s)", self.interval)
         lay.addRow(self.save)
+        container = QWidget()
+        container.setLayout(lay)
+        root.addWidget(container)
+        root.addStretch()
 
     def _desktop_entry_text(self) -> str:
         desktop_path = ASSETS_DIR / "autostart" / "neonctl.desktop"

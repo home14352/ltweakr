@@ -26,21 +26,23 @@ class ProcessesService:
         if psutil is None:
             return []
         rows = []
-        for proc in psutil.process_iter(
-            ["pid", "name", "username", "memory_percent", "cpu_percent"]
-        ):
-            info = proc.info
-            rows.append(
-                {
-                    "pid": str(info.get("pid", "")),
-                    "name": str(info.get("name") or "?"),
-                    "user": str(info.get("username") or "?"),
-                    "cpu": f"{float(info.get('cpu_percent') or 0.0):.1f}",
-                    "mem": f"{float(info.get('memory_percent') or 0.0):.1f}",
-                }
-            )
+        for proc in psutil.process_iter(["pid", "name", "username", "memory_percent"]):
+            try:
+                info = proc.info
+                rows.append(
+                    {
+                        "pid": str(info.get("pid", "")),
+                        "name": str(info.get("name") or proc.name() or "?"),
+                        "user": str(info.get("username") or "?"),
+                        "cpu": f"{float(proc.cpu_percent(interval=None) or 0.0):.1f}",
+                        "mem": f"{float(info.get('memory_percent') or 0.0):.1f}",
+                    }
+                )
+            except Exception:  # noqa: BLE001
+                continue
             if len(rows) >= limit:
                 break
+        rows.sort(key=lambda row: float(row["cpu"]), reverse=True)
         return rows
 
     def terminate(self, pid: int) -> bool:

@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QListWidget,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -23,7 +24,10 @@ class RepositoriesPage(QWidget):
         top.addWidget(QLabel("<h2>Repositories</h2>"))
         self.refresh_btn = QPushButton("Refresh")
         self.refresh_btn.clicked.connect(self.reload)
+        self.sync_btn = QPushButton("Sync metadata (root)")
+        self.sync_btn.clicked.connect(self.sync_metadata)
         top.addWidget(self.refresh_btn)
+        top.addWidget(self.sync_btn)
         top.addStretch()
         lay.addLayout(top)
 
@@ -51,3 +55,18 @@ class RepositoriesPage(QWidget):
             return
         for repo in repos:
             self.listing.addItem(repo)
+
+    def sync_metadata(self):
+        res = self.service.refresh_metadata()
+        if res is None:
+            QMessageBox.information(self, "Repositories", "No supported repository tool found.")
+            return
+        if res.returncode == 0:
+            QMessageBox.information(self, "Repositories", "Repository metadata synced.")
+        else:
+            QMessageBox.warning(
+                self,
+                "Repositories",
+                (res.stderr or res.stdout or "Failed to sync repositories.").strip(),
+            )
+        self.reload()
