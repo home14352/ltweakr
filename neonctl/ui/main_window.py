@@ -98,7 +98,9 @@ class MainWindow(QMainWindow):
             from PySide6.QtWidgets import QSystemTrayIcon
 
             if QSystemTrayIcon.isSystemTrayAvailable():
-                self.tray = NeonTray(icon, self, self.open_page, self.settings)
+                self.tray = NeonTray(
+                    icon, self, self.open_page, self.settings, self.quit_application
+                )
                 self.tray.show()
 
     def _settings_saved(self, settings):
@@ -119,5 +121,10 @@ class MainWindow(QMainWindow):
         super().closeEvent(event)
 
     def force_quit(self):
+        self.quit_application()
+
+    def quit_application(self):
         self._allow_quit = True
+        if self.tray:
+            self.tray.shutdown()
         self.close()
